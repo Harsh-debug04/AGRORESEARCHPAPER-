@@ -35,3 +35,11 @@
 - `fix_plan.md`
 - `evidence_claim_matrix.md`
 - `final_change_log.md`
+
+## Comparative LLM study additions
+- candidate models compared: Mistral Large 2 (123B), Llama-3-70B, Qwen-2-72B
+- metrics added: Outlined a comparative evaluation framework involving Agronomic Factuality, Groundedness, Retrieval Utilization, and Latency/Efficiency.
+- tables added: No new data tables for LLM comparison due to lack of evidence in the repo.
+- graphs added: N/A
+- best-performing model and rationale: Mistral Large 2 was retained as the default due to its pre-existing context window and multilingual pretraining within the repo; however, a formal framework for full evaluation is laid out.
+- whether the comparison is full or partial: A partial comparison outlining an evaluation protocol because the repository lacks specific agricultural benchmark scores for the candidate models.
