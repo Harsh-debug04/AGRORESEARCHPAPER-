@@ -18,7 +18,7 @@
 \maketitle
 
 \begin{abstract}
-The agricultural sector of the Indian subcontinent remains hampered by severe informational constraints; fewer than a third of smallholders receive timely, actionable agronomic advice. Existing government-issued crop calendars are static and generalised, rendering them unreliable under the accelerating pace of climate change. AgroTrack addresses this gap through a dynamic crop-calendar platform powered by a Retrieval-Augmented Generation (RAG) architecture. The system couples the pre-trained parametric memory of Mistral Large 2 with a scalable vector database (Milvus) to ingest foundational agronomic knowledge and real-time telemetry from the India Meteorological Department (IMD) and AGMARKNET pricing APIs. Domain adaptation is achieved via Low-Rank Adaptation (LoRA), which reduces trainable parameters and GPU memory consumption while preserving model quality. System benchmarks demonstrate vector retrieval latencies below 50 ms across 50,000 document chunks, and end-to-end response latencies of 1.2–1.8 s. On a limited set of adversarial test queries regarding banned substances, the system exhibited a hallucination rate below 2\%. Furthermore, agronomic simulations suggest that dynamic, growth-stage-aware fertiliser scheduling could potentially reduce total nitrogen application by 15–20\%, highlighting opportunities for carbon-credit tracking. A load-testing deployment involving 1,200 simulated farm endpoints demonstrated system robustness under concurrent requests. These results establish AgroTrack as a reproducible operational layer bridging agricultural research and decision-making.
+The agricultural sector of the Indian subcontinent remains hampered by severe informational constraints; fewer than a third of smallholders receive timely, actionable agronomic advice. Existing government-issued crop calendars are static and generalised, rendering them unreliable under the accelerating pace of climate change. AgroTrack addresses this gap through a dynamic crop-calendar platform powered by a Retrieval-Augmented Generation (RAG) architecture. The system couples the pre-trained parametric memory of Mistral Large 2 with a scalable vector database (Milvus) to ingest foundational agronomic knowledge and real-time telemetry from the India Meteorological Department (IMD) and AGMARKNET pricing APIs. Domain adaptation is achieved via Low-Rank Adaptation (LoRA), which reduces trainable parameters and GPU memory consumption while preserving model quality. System benchmarks demonstrate vector retrieval latencies below 50 ms across 50,000 document chunks, and end-to-end response latencies of 1.2–1.8 s. On a limited set of adversarial test queries regarding banned substances, the system exhibited a hallucination rate below 2\%. Furthermore, agronomic simulations suggest that dynamic, growth-stage-aware fertiliser scheduling could potentially reduce total nitrogen application by 15–20\%, highlighting opportunities for carbon-credit tracking. A load-testing deployment involving 1,200 simulated farm endpoints demonstrated system robustness under concurrent requests. We also outline a comparative benchmarking protocol for candidate open-source Large Language Models (LLMs) to guide future domain-specific deployments. These results establish AgroTrack as a reproducible operational layer bridging agricultural research and decision-making.
 \end{abstract}
 
 \section{Introduction}
@@ -36,6 +36,7 @@ The core objective is to architect a scalable, predictive crop-calendar ecosyste
     \item \textbf{Seedling API:} A scalable B2B subscription framework licensing dynamic crop data to agritech platforms.
     \item \textbf{Localisation Engine:} Integration of real-time weather (IMD) and mandi pricing (AGMARKNET) into the LLM context window for coordinate-aware recommendations.
     \item \textbf{Carbon Footprint Component:} A proof-of-concept module applying IPCC Tier 1 guidelines to track farm inputs and estimate greenhouse-gas emissions.
+    \item \textbf{LLM Comparative Evaluation Framework:} Establishing a protocol for comparing open-source candidate models on domain-specific agricultural tasks.
 \end{itemize}
 
 \section{Related Work}
@@ -53,8 +54,8 @@ Prudente et al. \cite{Prudente_2025} map sowing dates in Bihar and Washington us
 \subsection{Large Language Models in Agriculture}
 The emergence of instruction-tuned LLMs provides a natural fit for agronomic advisory systems. Lewis et al. \cite{Lewis_2020} introduced Retrieval-Augmented Generation as a method to ground parametric LLM knowledge in non-parametric, updatable document stores, substantially reducing hallucination on knowledge-intensive tasks. Hu et al. \cite{Hu_2022} demonstrated that full fine-tuning of billion-parameter models is unnecessary for domain adaptation: LoRA achieves competitive downstream performance while training a fraction of the parameters and reducing GPU memory requirements \cite{Hu_2022}.
 
-\subsection{Literature Synthesis and Research Gap}
-Taken together, the reviewed studies show that agricultural AI is capable in isolated tasks such as yield estimation and protocol-based citizen-science data collection. AgroTrack combines farmer-reported events, satellite verification, retrieval-grounded language generation, and operational APIs into one deployable workflow.
+\subsection{Open-Source LLM Selection for Domain QA}
+When designing domain-specific advisory systems, the selection of the generative backbone is critical. Open-weight models such as Mistral Large 2 and Llama-3-70B offer compelling trade-offs between parameter scale, reasoning capability, and deployability. While generic NLP benchmarks (e.g., MMLU, HumanEval) provide a baseline, they do not adequately proxy performance on hyper-localised agronomic tasks, necessitating domain-specific comparative evaluation protocols.
 
 \section{System Design and Methodology}
 \subsection{High-Level Architecture}
@@ -112,6 +113,9 @@ Dominant Language & English \\
 
 \textbf{Quality Control:} To ensure factual grounding, each output was cross-checked against the source passage by a second annotator; pairs where the output introduced information absent from the source were discarded. This manual curation represents a high-fidelity, source-grounded dataset with direct traceability to ICAR authority documents. Training runs for 3 epochs on $4 \times$ A100 GPUs over approximately 6 hours.
 
+
+\textbf{Quality Control:} To ensure factual grounding, each output was cross-checked against the source passage by a second annotator; pairs where the output introduced information absent from the source were discarded. This manual curation represents a high-fidelity, source-grounded dataset with direct traceability to ICAR authority documents. Training runs for 3 epochs on $4 \times$ A100 GPUs over approximately 6 hours.
+
 \section{Implementation and Software Engineering}
 \subsection{Development Environment}
 The backend uses Python and FastAPI, deployed on scalable cloud infrastructure. The frontend is a Next.js application designed for rapid access. The Seedling API provides standardised JSON responses for enterprise integration via RESTful endpoints, including dynamic calendar generation based on target field coordinates.
@@ -131,17 +135,29 @@ To assess safety, the system was subjected to 500 adversarial test queries speci
 \subsection{Agronomic Impact Simulation}
 To evaluate potential agronomic benefits, a simulation was conducted comparing traditional static fertiliser scheduling versus AgroTrack’s dynamic, growth-stage-aware protocol. Applied to a simulated kharif paddy scenario, the dynamic scheduling indicated a potential 15–20\% reduction in total nitrogen application, theoretically lowering N$_{2}$O emission risk. This highlights the value of integrating dynamic weather telemetry.
 
+\subsection{Comparative Evaluation Framework for Candidate Open-Source LLMs}
+A critical design decision in agricultural advisory systems is the selection of the base generative model. While Mistral Large 2 (123B) was deployed for the AgroTrack pilot due to its large context window and multilingual pretraining, alternative open-weight models such as Llama-3-70B represent viable candidates.
+
+However, generic NLP benchmarks (e.g., MMLU, MT-Bench) do not accurately reflect performance on highly specific agronomic reasoning tasks \cite{Mistral_2024}. To address this, we propose a comparative evaluation protocol to be executed in future work. The protocol will compare candidate models (e.g., Mistral Large 2, Llama-3-70B, Qwen-2-72B) across the following dimensions:
+\begin{enumerate}
+    \item \textbf{Agronomic Factuality:} Evaluated on a held-out set of 500 expert-annotated queries covering fertiliser scheduling, pest management, and weather-adjusted advice.
+    \item \textbf{Groundedness:} Measuring the fidelity of the generated response to the retrieved RAG context, extending beyond the current adversarial queries.
+    \item \textbf{Retrieval Utilization:} The ability of the model to synthesize answers from multiple retrieved chunks coherently.
+    \item \textbf{Latency and Efficiency:} Measuring inference time and GPU memory requirements under production load.
+\end{enumerate}
+Because the current repository lacks empirical data comparing these models directly on the AgroTrack task, full execution of this comparative study is identified as a necessary subsequent step to formally justify the model selection.
+
 \section{Discussion}
 \subsection{Practical Implications of the System}
 The combination of RAG grounding and LoRA adaptation provides a scalable foundation for AgroTrack. RAG anchors generation in verified text, while LoRA adaptation introduces domain-specific lexical patterns at a fraction of the infrastructure cost of full fine-tuning. This efficiency lowers the barrier for academic groups and agritech start-ups to adapt language models to domain-specific tasks.
 
 \subsection{Limitations and Future Work}
-Several limitations must be acknowledged. First, the 15–20\% nitrogen reduction is explicitly a simulation-based estimate and has not been validated through a randomised controlled field trial. Similarly, the 1,200-farmer deployment was a system load and latency test; it did not measure agronomic impact or crop outcomes. Second, while the system supports multilingual embedding infrastructure, formal evaluation of generated responses in regional Indian languages has not been conducted. Third, the hallucination evaluation was restricted to a narrow set of adversarial queries (banned substances) and lacks a formal rubric for broader agronomic correctness. Finally, retrieval quality metrics beyond latency remain to be established.
+Several limitations must be acknowledged. First, the 15–20\% nitrogen reduction is explicitly a simulation-based estimate and has not been validated through a randomised controlled field trial. Similarly, the 1,200-farmer deployment was a system load and latency test; it did not measure agronomic impact or crop outcomes. Second, while the system supports multilingual embedding infrastructure, formal evaluation of generated responses in regional Indian languages has not been conducted. Third, the hallucination evaluation was restricted to a narrow set of adversarial queries (banned substances) and lacks a formal rubric for broader agronomic correctness. Finally, empirical comparative data evaluating candidate LLMs (e.g., Mistral vs. Llama-3) on the specific agricultural task is currently absent, relying instead on generic benchmarks.
 
-Future work will focus on formal field deployments to measure real-world agronomic outcomes, expanding the manually curated dataset, and conducting comprehensive multilingual and retrieval-quality evaluations.
+Future work will focus on formal field deployments to measure real-world agronomic outcomes, expanding the manually curated dataset, executing the proposed comparative LLM evaluation, and conducting comprehensive multilingual and retrieval-quality evaluations.
 
 \section{Conclusions}
-AgroTrack demonstrates that the combination of Retrieval-Augmented Generation, parameter-efficient fine-tuning via LoRA, and multi-channel ingestion can deliver a scalable architectural foundation for crop intelligence platforms. By fusing static agronomic authority documents with live weather telemetry, the system enables dynamic query resolution. While real-world agronomic impact and comprehensive multilingual performance await further field validation, the system's low latency and baseline safety on adversarial queries illustrate the potential of open-weights LLMs in domain-specific agricultural applications.
+AgroTrack demonstrates that the combination of Retrieval-Augmented Generation, parameter-efficient fine-tuning via LoRA, and multi-channel ingestion can deliver a scalable architectural foundation for crop intelligence platforms. By fusing static agronomic authority documents with live weather telemetry, the system enables dynamic query resolution. While real-world agronomic impact and comprehensive comparative model evaluations await further field validation, the system's low latency and baseline safety on adversarial queries illustrate the potential of open-weights LLMs in domain-specific agricultural applications.
 
 \section*{CRediT Authorship}
 \textbf{Aarav Asthana}: Conceptualisation, Methodology, Software, Formal Analysis, Writing---original draft. \textbf{Suyash Sinha}: Resources, Data Curation, Validation, Supervision, Project Administration, Writing---review \& editing.
